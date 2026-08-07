@@ -107,4 +107,102 @@ public class AnalizadorLexico {
         }
         return false;
     }
+    
+    private void leerCadena() {
+        int filaInicio = fila;
+        int columnaInicio = columna;
+        StringBuilder cadena = new StringBuilder();
+
+        avanzar(); //Se salta la comilla de apertura, no se guarda como parte del contenido
+
+        boolean cerrada = false;
+        while (posicion < texto.length()) {
+            char actual = texto.charAt(posicion);
+        
+            if (actual == '"') {
+                avanzar(); //Se salta la comilla de cierre tambien
+                cerrada = true;
+                break;
+            }
+            if (actual == '\n') {
+                //La cadena no puede cruzar un salto de linea sin cerrarse
+                break;
+            }
+        
+            cadena.append(actual);
+            avanzar();
+        }
+
+        if (cerrada) {
+            contadorTokens++;
+            Token token = new Token(contadorTokens, cadena.toString(), "CADENA", filaInicio, columnaInicio);
+            listaTokens.add(token);
+        } else {
+            ErrorLexico error = new ErrorLexico(cadena.toString(), "Cadena sin cerrar", filaInicio, columnaInicio);
+            listaErrores.add(error);
+        }
+    }
+    
+    private void leerNumero() {
+        int filaInicio = fila;
+        int columnaInicio = columna;
+        StringBuilder numero = new StringBuilder();
+        boolean esDecimal = false;
+
+        while (posicion < texto.length()) {
+            char actual = texto.charAt(posicion);
+
+            if (Character.isDigit(actual)) {
+                numero.append(actual);
+                avanzar();
+            } else if (actual == '.' && !esDecimal && Character.isDigit(espiar())) {
+                //Solo se acepta el punto si aun no hay otro punto y si despues viene un digito
+                esDecimal = true;
+                numero.append(actual);
+                avanzar();
+            } else {
+                break;
+            }
+        }
+
+        String lexema = numero.toString();
+        String tipo = esDecimal ? "DECIMAL" : "ENTERO";
+
+        contadorTokens++;
+        Token token = new Token(contadorTokens, lexema, tipo, filaInicio, columnaInicio);
+        listaTokens.add(token);
+    }
+    
+    private void leerComentario() {
+        int filaInicio = fila;
+        int columnaInicio = columna;
+    
+        avanzar(); //Se salta la primera barra "/"
+        char siguiente = texto.charAt(posicion);
+
+        if (siguiente == '/') {
+            //Comentario de linea: se salta todo hasta encontrar un salto de linea o el fin del archivo
+            avanzar(); // se salta la segunda barra
+            while (posicion < texto.length() && texto.charAt(posicion) != '\n') {
+                avanzar();
+            }
+        } else if (siguiente == '*') {
+            //Comentario de bloque: se salta todo hasta encontrar */
+            avanzar(); //Se salta el asterisco
+            boolean cerrado = false;
+            while (posicion < texto.length()) {
+                if (texto.charAt(posicion) == '*' && espiar() == '/') {
+                    avanzar(); //salta el *
+                    avanzar(); //salta el /
+                    cerrado = true;
+                    break;
+                }
+                avanzar();
+            }
+            if (!cerrado) {
+                ErrorLexico error = new ErrorLexico("/*", "Comentario de bloque sin cerrar", filaInicio, columnaInicio);
+                listaErrores.add(error);
+            }
+        }
+    }
 }
