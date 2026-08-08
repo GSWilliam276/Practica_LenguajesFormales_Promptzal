@@ -205,4 +205,32 @@ public class AnalizadorLexico {
             }
         }
     }
+    
+    private void leerDirectiva () {
+        int filaInicio = fila;
+        int columnaInicio = columna;
+        StringBuilder directiva = new StringBuilder ();
+        
+        avanzar ();  //Se salta el simbolo @, no se guarda como parte del contenido
+        
+        while (posicion < texto.length() && esCaracterDePalabra(texto.charAt(posicion))){
+            directiva.append(texto.charAt(posicion));
+            avanzar();
+        }
+        
+        String lexema = directiva.toString();
+        String tipo = clasificarDirectiva(lexema);
+        
+        contadorTokens ++;
+        Token token = new Token(contadorTokens, lexema, tipo, filaInicio, columnaInicio);
+        listaTokens.add(token);
+    }
+    
+    private String clasificarDirectiva(String directiva){
+        String[] directivasValidas = {"modelo", "rol", "formato"};
+    if (contiene(directivasValidas, directiva)) {
+        return "DIRECTIVA";
+    }
+    return "CARACTER_NO_RECONOCIDO"; // por si acaso viene algo raro despues del @
+    }
 }
