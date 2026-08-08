@@ -228,9 +228,71 @@ public class AnalizadorLexico {
     
     private String clasificarDirectiva(String directiva){
         String[] directivasValidas = {"modelo", "rol", "formato"};
-    if (contiene(directivasValidas, directiva)) {
-        return "DIRECTIVA";
+        if (contiene(directivasValidas, directiva)) {
+            return "DIRECTIVA";
+        }
+        return "CARACTER_NO_RECONOCIDO"; //Por si acaso viene algo raro despues del @
     }
-    return "CARACTER_NO_RECONOCIDO"; // por si acaso viene algo raro despues del @
+    
+    public void analizar() {
+        while (posicion < texto.length()) {
+            char actual = texto.charAt(posicion);
+
+            if (actual == ' ' || actual == '\t' || actual == '\r' || actual == '\n') {
+                //Espacios en blanco y saltos de linea se ignoran, solo se avanza
+                avanzar();
+            } else if (Character.isLetter(actual) || actual == '_') {
+                leerPalabra();
+            } else if (actual == '@') {
+                leerDirectiva();
+            } else if (actual == '"') {
+                leerCadena();
+            } else if (Character.isDigit(actual)) {
+                leerNumero();
+            } else if (actual == '/') {
+                leerComentario();
+            } else if (actual == '-') {
+                leerConectorFlecha();
+            } else if (actual == '=' || actual == '+' || actual == '{' || actual == '}' || actual == '(' || actual == ')' || actual == ',') {
+                leerSimboloSuelto(actual);
+            } else {
+                //No encaja en ninguna categoria valida: caracter no reconocido
+                int filaError = fila;
+                int columnaError = columna;
+                ErrorLexico error = new ErrorLexico(String.valueOf(actual), "Caracter no reconocido", filaError, columnaError);
+                listaErrores.add(error);
+                avanzar();
+            }
+        }
+    }
+    
+    private void leerConectorFlecha() {
+        //Maneja el caso de -, que puede ser -> o error
+        int filaInicio = fila;
+        int columnaInicio = columna;
+
+        if (espiar() == '>') {
+            avanzar(); // salta el -
+            avanzar(); // salta el >
+            contadorTokens++;
+            Token token = new Token(contadorTokens, "->", "CONECTOR", filaInicio, columnaInicio);
+            listaTokens.add(token);
+        } else {
+            ErrorLexico error = new ErrorLexico("-", "Caracter no reconocido", filaInicio, columnaInicio);
+            listaErrores.add(error);
+            avanzar();
+        }
+    }
+    
+    private void leerSimboloSuelto(char simbolo) {
+        //Maneja los simbolos de un solo caracter
+        int filaInicio = fila;
+        int columnaInicio = columna;
+        String tipo = (simbolo == '=' || simbolo == '+') ? "OPERADOR" : "DELIMITADOR";
+
+        avanzar();
+        contadorTokens++;
+        Token token = new Token(contadorTokens, String.valueOf(simbolo), tipo, filaInicio, columnaInicio);
+        listaTokens.add(token);
     }
 }
