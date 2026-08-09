@@ -295,4 +295,24 @@ public class AnalizadorLexico {
         Token token = new Token(contadorTokens, String.valueOf(simbolo), tipo, filaInicio, columnaInicio);
         listaTokens.add(token);
     }
+    
+    public void mostrarTokensEnConsola() {
+        System.out.println("=== TOKENS RECONOCIDOS ===");
+        System.out.printf("%-5s %-20s %-20s %-6s %-8s%n", "No.", "Lexema", "Tipo", "Fila", "Columna");
+        for (Token t : listaTokens) {
+            System.out.printf("%-5d %-20s %-20s %-6d %-8d%n", 
+                t.getNumero(), t.getLexema(), t.getTipo(), t.getFila(), t.getColumna());
+        }
+    
+        System.out.println("\n=== ERRORES LEXICOS ===");
+        if (listaErrores.isEmpty()) {
+            System.out.println("No se encontraron errores lexicos.");
+        } else {
+            System.out.printf("%-15s %-30s %-6s %-8s%n", "Lexema", "Descripcion", "Fila", "Columna");
+            for (ErrorLexico e : listaErrores) {
+                System.out.printf("%-15s %-30s %-6d %-8d%n", 
+                    e.getLexema(), e.getDescripcion(), e.getFila(), e.getColumna());
+            }
+        }
+    }
 }
