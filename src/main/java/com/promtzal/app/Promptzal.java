@@ -24,6 +24,11 @@ public class Promptzal {
             AnalizadorLexico analizador = new AnalizadorLexico(contenido);
             analizador.analizar();
             analizador.mostrarTokensEnConsola();
+            GeneradorReporte generador = new GeneradorReporte();
+            generador.generarReporteTokens(analizador.getListaTokens(), "reporte_tokens.html");
+            generador.generarReporteErrores(analizador.getListaErrores(), "reporte_errores.html");
+
+            System.out.println("\nReportes HTML generados: reporte_tokens.html y reporte_errores.html");
             
             System.out.println("Analisis completado.");
             

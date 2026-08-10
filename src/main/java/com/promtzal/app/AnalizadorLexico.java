@@ -315,4 +315,13 @@ public class AnalizadorLexico {
             }
         }
     }
+    
+    //Getters
+    public List<Token> getListaTokens() {
+        return listaTokens;
+    }
+
+    public List<ErrorLexico> getListaErrores() {
+        return listaErrores;
+    }
 }
