@@ -207,24 +207,36 @@ public class AnalizadorLexico {
         }
     }
     
-    private void leerDirectiva () {
+    private void leerDirectiva() {
         int filaInicio = fila;
         int columnaInicio = columna;
-        StringBuilder directiva = new StringBuilder ();
-        
-        avanzar ();  //Se salta el simbolo @, no se guarda como parte del contenido
-        
-        while (posicion < texto.length() && esCaracterDePalabra(texto.charAt(posicion))){
+        StringBuilder directiva = new StringBuilder();
+    
+        avanzar(); //Se salta el simbolo @, no se guarda como parte del contenido
+    
+        while (posicion < texto.length() && esCaracterDePalabra(texto.charAt(posicion))) {
             directiva.append(texto.charAt(posicion));
             avanzar();
         }
-        
+    
         String lexema = directiva.toString();
-        String tipo = clasificarDirectiva(lexema);
-        
-        contadorTokens ++;
-        Token token = new Token(contadorTokens, lexema, tipo, filaInicio, columnaInicio);
+    
+        //Si no es una directiva valida (incluyendo el caso de quedar vacia),
+        //se reporta como error lexico en vez de generar un token
+        if (!esDirectivaValida(lexema)) {
+            ErrorLexico error = new ErrorLexico("@" + lexema, "Directiva no reconocida", filaInicio, columnaInicio);
+            listaErrores.add(error);
+            return;
+        }
+    
+        contadorTokens++;
+        Token token = new Token(contadorTokens, lexema, "DIRECTIVA", filaInicio, columnaInicio);
         listaTokens.add(token);
+    }
+
+    private boolean esDirectivaValida(String directiva) {
+        String[] directivasValidas = {"modelo", "rol", "formato"};
+        return contiene(directivasValidas, directiva);
     }
     
     private String clasificarDirectiva(String directiva){
