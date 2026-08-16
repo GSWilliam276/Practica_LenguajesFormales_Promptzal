@@ -239,14 +239,6 @@ public class AnalizadorLexico {
         return contiene(directivasValidas, directiva);
     }
     
-    private String clasificarDirectiva(String directiva){
-        String[] directivasValidas = {"modelo", "rol", "formato"};
-        if (contiene(directivasValidas, directiva)) {
-            return "DIRECTIVA";
-        }
-        return "CARACTER_NO_RECONOCIDO"; //Por si acaso viene algo raro despues del @
-    }
-    
     public void analizar() {
         while (posicion < texto.length()) {
             char actual = texto.charAt(posicion);
